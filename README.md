@@ -2,7 +2,7 @@
 
 一个跑在 Cloudflare Workers 上的轻量热点聚合页：打开即看，无登录、无刷新按钮，卡片内滚动浏览。
 
-## 当前栏目（9 个）
+## 当前栏目（10 个）
 
 | 栏目 | 数据来源 |
 | --- | --- |
@@ -14,6 +14,7 @@
 | 果壳首页推荐 | allnet.hot |
 | 中关村最新资讯 | allnet.hot |
 | 豆瓣实时热门 | top.open2hub.com |
+| ZAKER 新闻 | top.open2hub.com/channel/news |
 
 ## 结构
 

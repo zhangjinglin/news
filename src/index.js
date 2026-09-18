@@ -22,6 +22,7 @@ const SOURCES = [
   { key: "guokr", name: "果壳首页推荐", desc: "科技科普推荐", accent: "#65a30d", glyph: "果", provider: "allnet", ref: 124, origin: "https://allnet.hot/detail/124" },
   { key: "zol", name: "中关村最新资讯", desc: "数码科技资讯", accent: "#0284c7", glyph: "中", provider: "allnet", ref: 702, origin: "https://allnet.hot/detail/702" },
   { key: "douban", name: "豆瓣实时热门", desc: "实时热门讨论", accent: "#007722", glyph: "豆", provider: "open2hub", ref: "豆瓣", origin: "https://top.open2hub.com/" },
+  { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", provider: "open2hub", ref: "ZAKER", page: "https://top.open2hub.com/channel/news", origin: "https://top.open2hub.com/channel/news" },
 ];
 
 const byKey = Object.fromEntries(SOURCES.map((s) => [s.key, s]));
@@ -157,7 +158,8 @@ const PROVIDERS = {
     parse: (html) => parseAllnet(html),
   },
   open2hub: {
-    page: () => `https://top.open2hub.com/`,
+    // 默认抓首页;个别板块只在频道页出现时,栏目配 page 覆盖
+    page: (src) => src.page || `https://top.open2hub.com/`,
     parse: (html, src) => parseOpen2hub(html, src.ref),
   },
 };
