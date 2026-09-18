@@ -28,6 +28,7 @@ const SOURCES = [
   { key: "tweet", name: "推文起爆榜", desc: "X 中文热门推文", accent: "#64748b", glyph: "X", cat: "bbs", provider: "sopilot", ref: "rank", origin: "https://sopilot.net/rank" },
   { key: "tweet-hot", name: "推文最热曝光", desc: "6 小时曝光最高", accent: "#0f766e", glyph: "爆", cat: "bbs", provider: "sopilot", ref: "tweets-6h", page: "https://sopilot.net/zh/rank/tweets?range=6h", origin: "https://sopilot.net/zh/rank/tweets?range=6h" },
   { key: "article", name: "长文起爆榜", desc: "X 热门长文", accent: "#7c3aed", glyph: "文", cat: "bbs", provider: "sopilot", ref: "articles", page: "https://sopilot.net/zh/rank/articles", origin: "https://sopilot.net/zh/rank/articles" },
+  { key: "hot-day", name: "榜中榜日榜", desc: "全网热度聚合", accent: "#db2777", glyph: "日", cat: "news", provider: "tophub", ref: "hot", origin: "https://tophub.today/hot" },
 ];
 
 const byKey = Object.fromEntries(SOURCES.map((s) => [s.key, s]));
@@ -147,6 +148,34 @@ function parseSopilot(html) {
   return items;
 }
 
+/** tophub 榜中榜日榜:按 li.child-item 切块,取排名/标题/链接/来源热度 */
+function parseTophub(html) {
+  const items = [];
+  const blocks = html.match(/<li class="child-item">[\s\S]*?<\/li>/g) || [];
+  for (const b of blocks) {
+    if (items.length >= 50) break;
+    const rm = b.match(/index-\d+">\s*(\d+)/);
+    const um = b.match(/medium-txt"><a href="([^"]+)"/);
+    const tm = b.match(/medium-txt"><a[^>]*>([\s\S]*?)<\/a>/);
+    const sm = b.match(/small-txt">([\s\S]*?)<\/p>/);
+    if (!um || !tm) continue;
+    const title = stripTags(tm[1]).replace(/\s+/g, " ").trim();
+    if (!title) continue;
+    const meta = sm ? stripTags(sm[1]).replace(/\s+/g, " ").trim() : "";
+    items.push({
+      rank: rm ? parseInt(rm[1], 10) : items.length + 1,
+      title,
+      url: um[1],
+      image: "",
+      date: "",
+      status: "",
+      meta,
+    });
+  }
+  items.sort((a, b) => a.rank - b.rank);
+  return items;
+}
+
 /** sopilot 长文榜:按 <article> 卡片切块,取状态链接 + <h2> 真标题 */
 function parseSopilotArticles(html) {
   const items = [];
@@ -217,6 +246,10 @@ const PROVIDERS = {
     // 曝光榜/长文榜这类子榜单由栏目配 page 覆盖;长文榜用 article 卡片解析
     page: (src) => src.page || `https://sopilot.net/rank`,
     parse: (html, src) => (src.ref === "articles" ? parseSopilotArticles(html) : parseSopilot(html)),
+  },
+  tophub: {
+    page: () => `https://tophub.today/hot`,
+    parse: (html) => parseTophub(html),
   },
 };
 
