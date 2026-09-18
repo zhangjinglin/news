@@ -1,0 +1,6 @@
+name = "news-hot"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+[assets]
+directory = "./public"
