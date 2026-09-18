@@ -2,8 +2,6 @@
 
 一个跑在 Cloudflare Workers 上的轻量热点聚合页：打开即看，无登录、无刷新按钮，卡片内滚动浏览。
 
-线上地址：<https://news-hot.jiv.workers.dev>
-
 ## 当前栏目（9 个）
 
 | 栏目 | 数据来源 |
