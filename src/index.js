@@ -25,6 +25,7 @@ const SOURCES = [
   { key: "douban", name: "豆瓣实时热门", desc: "实时热门讨论", accent: "#007722", glyph: "豆", cat: "news", provider: "open2hub", ref: "豆瓣", origin: "https://top.open2hub.com/" },
   { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", cat: "news", provider: "open2hub", ref: "ZAKER", page: "https://top.open2hub.com/channel/news", origin: "https://top.open2hub.com/channel/news" },
   { key: "cto51", name: "51CTO 推荐", desc: "技术干货推荐", accent: "#c2410c", glyph: "51", cat: "tech", provider: "open2hub", ref: "51CTO", page: "https://top.open2hub.com/channel/tech", origin: "https://top.open2hub.com/channel/tech" },
+  { key: "tweet", name: "推文起爆榜", desc: "X 中文热门推文", accent: "#64748b", glyph: "X", cat: "news", provider: "sopilot", ref: "rank", origin: "https://sopilot.net/rank" },
 ];
 
 const byKey = Object.fromEntries(SOURCES.map((s) => [s.key, s]));
@@ -118,7 +119,33 @@ function parseAllnet(html) {
   return items;
 }
 
-/** open2hub 首页:按 <h3 class="platform-title">板块名</h3> 切出对应区块,
+/** sopilot 推文榜:从 x.com/status 锚点抠条目。
+ *  纯图片/视频推文的锚文本只有时间,则往后找作者名拼标题 */
+function parseSopilot(html) {
+  const items = [];
+  const seen = new Set();
+  const re = /href=\\?"(https:\/\/x\.com\/[^"]+\/status\/[^"]+)\\?"[^>]*>([\s\S]*?)<\/a>/g;
+  let m;
+  while ((m = re.exec(html)) !== null && items.length < 50) {
+    const url = m[1];
+    if (seen.has(url)) continue;
+    let title = stripTags(m[2]).replace(/\s*https?:\/\/t\.co\/\w+\s*/g, " ").trim();
+    // 纯数字的是点赞/回复数链接,不是推文标题
+    if (title.length < 2 || /^\d+$/.test(title)) continue;
+    if (/^\d{1,2}\/\d{1,2},\s*\d{1,2}:\d{2}\s*[AP]M$/.test(title)) {
+      const ahead = html.slice(m.index, m.index + 2000);
+      const am = ahead.match(/rank\/creators\/[^"]*"[^>]*title="([^"]+)"/) ||
+        ahead.match(/class="truncate"[^>]*>([^<]+)</);
+      const author = am ? stripTags(am[1]) : "";
+      title = author ? `${author} 的热门推文` : "热门推文(图片/视频)";
+    }
+    seen.add(url);
+    items.push({ rank: items.length + 1, title, url, image: "", date: "", status: "" });
+  }
+  return items;
+}
+
+/** open2hub:按 <h3 class="platform-title">板块名</h3> 切出对应区块,
  *  再从 list-item-link 锚点里抠 (list-number 排名 + list-text 标题) */
 function parseOpen2hub(html, section) {
   const items = [];
@@ -163,6 +190,11 @@ const PROVIDERS = {
     // 默认抓首页;个别板块只在频道页出现时,栏目配 page 覆盖
     page: (src) => src.page || `https://top.open2hub.com/`,
     parse: (html, src) => parseOpen2hub(html, src.ref),
+  },
+  sopilot: {
+    // /zh/rank 不稳定,直接抓无语言前缀的 /rank(内容同样是中文热推)
+    page: () => `https://sopilot.net/rank`,
+    parse: (html) => parseSopilot(html),
   },
 };
 
