@@ -26,6 +26,7 @@ const SOURCES = [
   { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", cat: "news", provider: "open2hub", ref: "ZAKER", page: "https://top.open2hub.com/channel/news", origin: "https://top.open2hub.com/channel/news" },
   { key: "cto51", name: "51CTO 推荐", desc: "技术干货推荐", accent: "#c2410c", glyph: "51", cat: "tech", provider: "open2hub", ref: "51CTO", page: "https://top.open2hub.com/channel/tech", origin: "https://top.open2hub.com/channel/tech" },
   { key: "tweet", name: "推文起爆榜", desc: "X 中文热门推文", accent: "#64748b", glyph: "X", cat: "news", provider: "sopilot", ref: "rank", origin: "https://sopilot.net/rank" },
+  { key: "tweet-hot", name: "推文最热曝光", desc: "6 小时曝光最高", accent: "#0f766e", glyph: "爆", cat: "news", provider: "sopilot", ref: "tweets-6h", page: "https://sopilot.net/zh/rank/tweets?range=6h", origin: "https://sopilot.net/zh/rank/tweets?range=6h" },
 ];
 
 const byKey = Object.fromEntries(SOURCES.map((s) => [s.key, s]));
@@ -192,8 +193,9 @@ const PROVIDERS = {
     parse: (html, src) => parseOpen2hub(html, src.ref),
   },
   sopilot: {
-    // /zh/rank 不稳定,直接抓无语言前缀的 /rank(内容同样是中文热推)
-    page: () => `https://sopilot.net/rank`,
+    // /zh/rank 不稳定,直接抓无语言前缀的 /rank(内容同样是中文热推);
+    // 曝光榜这类子榜单由栏目配 page 覆盖
+    page: (src) => src.page || `https://sopilot.net/rank`,
     parse: (html) => parseSopilot(html),
   },
 };

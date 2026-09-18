@@ -199,7 +199,7 @@
   <header class="hero">
     <div class="title">
       <h1>热点聚合 · 我的资讯墙</h1>
-      <p>精选 <b>12</b> 个源 · 知乎热搜 / 知乎热榜 / V2EX / IT之家AI / 虎嗅 / Linux DO / 果壳 / 中关村 / 豆瓣 / ZAKER / 51CTO / 推文起爆榜 · 打开即看最新</p>
+      <p>精选 <b>13</b> 个源 · 知乎热搜 / 知乎热榜 / V2EX / IT之家AI / 虎嗅 / Linux DO / 果壳 / 中关村 / 豆瓣 / ZAKER / 51CTO / 推文起爆榜 / 最热曝光 · 打开即看最新</p>
     </div>
     <div class="toolbar">
       <label class="search">🔍 <input id="q" type="search" placeholder="筛选关键词…"></label>
@@ -226,6 +226,7 @@ const FALLBACK = [
   { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", cat: "news", origin: "https://top.open2hub.com/channel/news" },
   { key: "cto51", name: "51CTO 推荐", desc: "技术干货推荐", accent: "#c2410c", glyph: "51", cat: "tech", origin: "https://top.open2hub.com/channel/tech" },
   { key: "tweet", name: "推文起爆榜", desc: "X 中文热门推文", accent: "#64748b", glyph: "X", cat: "news", origin: "https://sopilot.net/rank" },
+  { key: "tweet-hot", name: "推文最热曝光", desc: "6 小时曝光最高", accent: "#0f766e", glyph: "爆", cat: "news", origin: "https://sopilot.net/zh/rank/tweets?range=6h" },
 ];
 const CATS = [
   { k: "all", label: "全部" },
