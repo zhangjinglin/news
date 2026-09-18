@@ -200,7 +200,7 @@
   <header class="hero">
     <div class="title">
       <h1>热点聚合 · 我的资讯墙</h1>
-      <p>精选 <b>15</b> 个源 · 榜中榜日榜 / 长文起爆榜 / 最热曝光 / 推文起爆榜 / 51CTO / ZAKER / 豆瓣 / 中关村 / 果壳 / Linux DO / 虎嗅 / IT之家AI / V2EX / 知乎热榜 / 知乎热搜 · 打开即看最新</p>
+      <p>精选 <b>16</b> 个源 · 榜中榜日榜置顶，其余按新增倒序 · 打开即看最新</p>
     </div>
     <div class="toolbar">
       <label class="search">🔍 <input id="q" type="search" placeholder="筛选关键词…"></label>
@@ -223,13 +223,14 @@ const FALLBACK = [
   { key: "linuxdo", name: "Linux DO", id: 308, desc: "技术社区新帖", accent: "#10b981", glyph: "L", cat: "bbs" },
   { key: "guokr", name: "果壳首页推荐", id: 124, desc: "科技科普推荐", accent: "#65a30d", glyph: "果", cat: "tech" },
   { key: "zol", name: "中关村最新资讯", id: 702, desc: "数码科技资讯", accent: "#0284c7", glyph: "中", cat: "tech", origin: "https://allnet.hot/detail/702" },
-  { key: "douban", name: "豆瓣实时热门", desc: "实时热门讨论", accent: "#007722", glyph: "豆", cat: "news", origin: "https://top.open2hub.com/" },
   { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", cat: "news", origin: "https://top.open2hub.com/channel/news" },
   { key: "cto51", name: "51CTO 推荐", desc: "技术干货推荐", accent: "#c2410c", glyph: "51", cat: "tech", origin: "https://top.open2hub.com/channel/tech" },
   { key: "tweet", name: "推文起爆榜", desc: "X 中文热门推文", accent: "#64748b", glyph: "X", cat: "bbs", origin: "https://sopilot.net/rank" },
   { key: "tweet-hot", name: "推文最热曝光", desc: "6 小时曝光最高", accent: "#0f766e", glyph: "爆", cat: "bbs", origin: "https://sopilot.net/zh/rank/tweets?range=6h" },
   { key: "article", name: "长文起爆榜", desc: "X 热门长文", accent: "#7c3aed", glyph: "文", cat: "bbs", origin: "https://sopilot.net/zh/rank/articles" },
-  { key: "hot-day", name: "榜中榜日榜", desc: "全网热度聚合", accent: "#db2777", glyph: "日", cat: "news", origin: "https://tophub.today/hot" },
+  { key: "hot-day", name: "榜中榜日榜", desc: "全网热度聚合", accent: "#db2777", glyph: "日", cat: "news", pin: true, origin: "https://tophub.today/hot" },
+  { key: "xb", name: "X 曝光最高榜", desc: "X 爆款推文池", accent: "#0891b2", glyph: "曝", cat: "bbs", origin: "https://xbangdan.com/posts/" },
+  { key: "xb-global", name: "海外排行", desc: "全球昨日最火推文", accent: "#ec4899", glyph: "海", cat: "bbs", origin: "https://xbangdan.com/global/" },
 ];
 const CATS = [
   { k: "all", label: "全部" },
@@ -237,7 +238,11 @@ const CATS = [
   { k: "tech", label: "科技" },
   { k: "bbs", label: "社区" },
 ];
-const state = { sources: [...FALLBACK].reverse(), keyword: "", updated: {}, tab: localStorage.getItem("hot-tab") || "all" };
+// 展示顺序:pin 置顶在前,其余倒序(新的在前)
+function orderedSources() {
+  return [...state.sources.filter((s) => s.pin), ...state.sources.filter((s) => !s.pin).reverse()];
+}
+const state = { sources: FALLBACK, keyword: "", updated: {}, tab: localStorage.getItem("hot-tab") || "all" };
 function setTab(k) {
   state.tab = k;
   localStorage.setItem("hot-tab", k);
@@ -291,7 +296,7 @@ function renderShell() {
   $("#tabs").innerHTML = CATS.map((c) =>
     `<button class="tab${state.tab === c.k ? " active" : ""}" data-cat="${c.k}" onclick="setTab('${c.k}')">${c.label}</button>`
   ).join("");
-  $("#grid").innerHTML = state.sources.map((s) => `
+  $("#grid").innerHTML = orderedSources().map((s) => `
     <section class="card${state.tab !== "all" && (s.cat || "news") !== state.tab ? " hidden" : ""}" style="--ac:${s.accent}" id="card-${s.key}">
       <div class="card-head">
         <div class="logo">${esc(s.glyph || s.name[0])}</div>

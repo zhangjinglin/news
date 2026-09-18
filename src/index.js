@@ -11,7 +11,7 @@ const CACHE_TTL = 300; // 秒
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";
 
-// 加新栏目只需要在下面追加一行,展示时自动倒序,新加的永远排最前面
+// 加新栏目只需要在下面追加一行;展示顺序:pin 置顶的永远最前,其余倒序(新的在前)
 // provider 决定去哪个站抓,ref 是站内定位(详情页 id / 板块名)
 // cat 决定顶部分类页签:all(全部,隐含) / news(综合) / tech(科技) / bbs(社区)
 const SOURCES = [
@@ -23,13 +23,14 @@ const SOURCES = [
   { key: "linuxdo", name: "Linux DO", desc: "技术社区新帖", accent: "#10b981", glyph: "L", cat: "bbs", provider: "allnet", ref: 308, origin: "https://allnet.hot/detail/308" },
   { key: "guokr", name: "果壳首页推荐", desc: "科技科普推荐", accent: "#65a30d", glyph: "果", cat: "tech", provider: "allnet", ref: 124, origin: "https://allnet.hot/detail/124" },
   { key: "zol", name: "中关村最新资讯", desc: "数码科技资讯", accent: "#0284c7", glyph: "中", cat: "tech", provider: "allnet", ref: 702, origin: "https://allnet.hot/detail/702" },
-  { key: "douban", name: "豆瓣实时热门", desc: "实时热门讨论", accent: "#007722", glyph: "豆", cat: "news", provider: "open2hub", ref: "豆瓣", origin: "https://top.open2hub.com/" },
   { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", cat: "news", provider: "open2hub", ref: "ZAKER", page: "https://top.open2hub.com/channel/news", origin: "https://top.open2hub.com/channel/news" },
   { key: "cto51", name: "51CTO 推荐", desc: "技术干货推荐", accent: "#c2410c", glyph: "51", cat: "tech", provider: "open2hub", ref: "51CTO", page: "https://top.open2hub.com/channel/tech", origin: "https://top.open2hub.com/channel/tech" },
   { key: "tweet", name: "推文起爆榜", desc: "X 中文热门推文", accent: "#64748b", glyph: "X", cat: "bbs", provider: "sopilot", ref: "rank", origin: "https://sopilot.net/rank" },
   { key: "tweet-hot", name: "推文最热曝光", desc: "6 小时曝光最高", accent: "#0f766e", glyph: "爆", cat: "bbs", provider: "sopilot", ref: "tweets-6h", page: "https://sopilot.net/zh/rank/tweets?range=6h", origin: "https://sopilot.net/zh/rank/tweets?range=6h" },
   { key: "article", name: "长文起爆榜", desc: "X 热门长文", accent: "#7c3aed", glyph: "文", cat: "bbs", provider: "sopilot", ref: "articles", page: "https://sopilot.net/zh/rank/articles", origin: "https://sopilot.net/zh/rank/articles" },
-  { key: "hot-day", name: "榜中榜日榜", desc: "全网热度聚合", accent: "#db2777", glyph: "日", cat: "news", provider: "tophub", ref: "hot", origin: "https://tophub.today/hot" },
+  { key: "hot-day", name: "榜中榜日榜", desc: "全网热度聚合", accent: "#db2777", glyph: "日", cat: "news", pin: true, provider: "tophub", ref: "hot", origin: "https://tophub.today/hot" },
+  { key: "xb", name: "X 曝光最高榜", desc: "X 爆款推文池", accent: "#0891b2", glyph: "曝", cat: "bbs", provider: "xbangdan", ref: "posts", origin: "https://xbangdan.com/posts/" },
+  { key: "xb-global", name: "海外排行", desc: "全球昨日最火推文", accent: "#ec4899", glyph: "海", cat: "bbs", provider: "xbangdan", ref: "global", page: "https://xbangdan.com/global/", origin: "https://xbangdan.com/global/" },
 ];
 
 const byKey = Object.fromEntries(SOURCES.map((s) => [s.key, s]));
@@ -149,6 +150,56 @@ function parseSopilot(html) {
   return items;
 }
 
+/** xbangdan 曝光榜:锚点内 .n.tw2 放标题(截到 t.co 为止);排名按页面顺序(与榜单一致,不依赖标记) */
+function parseXbangdan(html) {
+  const items = [];
+  const seen = new Set();
+  const re = /<a\s[^>]*href=\\?"(https:\/\/x\.com\/[^"\\]+)\\?"[^>]*>([\s\S]*?)<\/a>/g;
+  let m;
+  while ((m = re.exec(html)) !== null && items.length < 50) {
+    const url = m[1].split("?")[0];
+    if (seen.has(url)) continue;
+    const inner = m[2];
+    let title = "";
+    const tm = inner.match(/n tw2">([\s\S]*?)(https?:\/\/t\.co|<\/span)/);
+    if (tm) title = stripTags(tm[1]).replace(/\s+/g, " ").trim();
+    if (!title || title.length < 2) continue;
+    seen.add(url);
+    items.push({ rank: items.length + 1, title, url, image: "", date: "", status: "" });
+  }
+  return items;
+}
+
+/** xbangdan 海外榜:按 tr.gl2-row 切行,data-id 是推文 id,标题在 tc-clamp 里 */
+function parseXbangdanGlobal(html) {
+  const items = [];
+  const rows = html.match(/<tr class="gl2-row"[^>]*>[\s\S]*?<\/tr>/g) || [];
+  for (const r of rows) {
+    if (items.length >= 50) break;
+    const idm = r.match(/data-id="(\d+)"/);
+    const hm = r.match(/href=\\?"https:\/\/x\.com\/([A-Za-z0-9_]+)\\?"/);
+    const tm = r.match(/tc-clamp">([\s\S]*?)<\/div>/);
+    if (!idm || !hm || !tm) continue;
+    let body = tm[1].replace(/<i class="tc-mk[^"]*"[^>]*>[\s\S]*?<\/i>/g, "");
+    const title = stripTags(body).replace(/\s+/g, " ").trim();
+    if (!title || title.length < 2) continue;
+    const rm = r.match(/rn rn-(\d+)/);
+    const likes = (r.match(/gc-likes[^>]*>([^<]+)</) || [])[1] || "";
+    const views = (r.match(/gc-views[^>]*>([^<]+)</) || [])[1] || "";
+    const meta = [likes ? `${likes.trim()}赞` : "", views ? `${views.trim()}浏览` : ""].filter(Boolean).join(" · ");
+    items.push({
+      rank: rm ? parseInt(rm[1], 10) : items.length + 1,
+      title,
+      url: `https://x.com/${hm[1]}/status/${idm[1]}`,
+      image: "",
+      date: "",
+      status: "",
+      meta,
+    });
+  }
+  return items;
+}
+
 /** tophub 榜中榜日榜:按 li.child-item 切块,取排名/标题/链接/来源热度 */
 function parseTophub(html) {
   const items = [];
@@ -252,6 +303,11 @@ const PROVIDERS = {
     page: () => `https://tophub.today/hot`,
     parse: (html) => parseTophub(html),
   },
+  xbangdan: {
+    // 默认抓 posts 页;海外榜这类子榜单由栏目配 page 覆盖
+    page: (src) => src.page || `https://xbangdan.com/posts/`,
+    parse: (html, src) => (src.ref === "global" ? parseXbangdanGlobal(html) : parseXbangdan(html)),
+  },
 };
 
 async function fetchUpstream(src) {
@@ -352,16 +408,18 @@ export default {
     }
 
     if (url.pathname === "/api/sources") {
+      // 下发原始追加顺序;展示排序只由前端 orderedSources 做(pin 置顶+其余倒序),避免两边重复排序抵消
+      const ordered = SOURCES;
       return json({
         ok: true,
-        // 展示倒序:后追加的(新的)排前面
-        sources: [...SOURCES].reverse().map(({ key, name, desc, accent, glyph, cat, provider, ref, origin }) => ({
+        sources: ordered.map(({ key, name, desc, accent, glyph, cat, pin, provider, ref, origin }) => ({
           key,
           name,
           desc,
           accent,
           glyph,
           cat,
+          pin: !!pin,
           provider,
           ref,
           origin,
