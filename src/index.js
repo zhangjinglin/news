@@ -14,6 +14,7 @@ const UA =
 // 加新栏目只需要在下面加一行,provider 决定去哪个站抓,ref 是站内定位(详情页 id / 板块名)
 // cat 决定顶部分类页签:all(全部,隐含) / news(综合) / tech(科技) / bbs(社区)
 const SOURCES = [
+  { key: "hot-day", name: "榜中榜日榜", desc: "全网热度聚合", accent: "#db2777", glyph: "日", cat: "news", provider: "tophub", ref: "hot", origin: "https://tophub.today/hot" },
   { key: "zhihu-hot", name: "知乎热搜", desc: "知乎实时热搜", accent: "#0066ff", glyph: "知", cat: "news", provider: "allnet", ref: 76, origin: "https://allnet.hot/detail/76" },
   { key: "zhihu-top", name: "知乎热榜", desc: "知乎热榜讨论", accent: "#4c7df0", glyph: "榜", cat: "news", provider: "allnet", ref: 13, origin: "https://allnet.hot/detail/13" },
   { key: "v2ex", name: "V2EX 最新", desc: "创意工作者社区", accent: "#334155", glyph: "V", cat: "bbs", provider: "allnet", ref: 1199, origin: "https://allnet.hot/detail/1199" },
@@ -28,7 +29,6 @@ const SOURCES = [
   { key: "tweet", name: "推文起爆榜", desc: "X 中文热门推文", accent: "#64748b", glyph: "X", cat: "bbs", provider: "sopilot", ref: "rank", origin: "https://sopilot.net/rank" },
   { key: "tweet-hot", name: "推文最热曝光", desc: "6 小时曝光最高", accent: "#0f766e", glyph: "爆", cat: "bbs", provider: "sopilot", ref: "tweets-6h", page: "https://sopilot.net/zh/rank/tweets?range=6h", origin: "https://sopilot.net/zh/rank/tweets?range=6h" },
   { key: "article", name: "长文起爆榜", desc: "X 热门长文", accent: "#7c3aed", glyph: "文", cat: "bbs", provider: "sopilot", ref: "articles", page: "https://sopilot.net/zh/rank/articles", origin: "https://sopilot.net/zh/rank/articles" },
-  { key: "hot-day", name: "榜中榜日榜", desc: "全网热度聚合", accent: "#db2777", glyph: "日", cat: "news", provider: "tophub", ref: "hot", origin: "https://tophub.today/hot" },
 ];
 
 const byKey = Object.fromEntries(SOURCES.map((s) => [s.key, s]));

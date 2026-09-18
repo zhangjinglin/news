@@ -6,10 +6,10 @@
 
 | 栏目 | 分类 | 数据来源 |
 | --- | --- | --- |
+| 榜中榜日榜 | 综合 | tophub.today/hot |
 | 知乎热搜 / 知乎热榜 | 综合 | allnet.hot |
 | 豆瓣实时热门 | 综合 | top.open2hub.com |
 | ZAKER 新闻 | 综合 | top.open2hub.com/channel/news |
-| 榜中榜日榜 | 综合 | tophub.today/hot |
 | IT 之家 AI / 虎嗅网最新 / 果壳首页推荐 / 中关村最新资讯 | 科技 | allnet.hot |
 | 51CTO 推荐 | 科技 | top.open2hub.com/channel/tech |
 | V2EX 最新 / Linux DO | 社区 | allnet.hot |
