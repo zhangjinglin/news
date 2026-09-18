@@ -39,8 +39,9 @@ pnpm exec wrangler deploy   # 发布
 
 ## 加新栏目
 
-1. 只加同站栏目：在 `src/index.js` 的 `SOURCES` 里加一行
+1. 只加同站栏目：在 `src/index.js` 的 `SOURCES` 末尾追加一行
    （记得填 `cat` 分类：news 综合 / tech 科技 / bbs 社区），
-   再在 `public/index.html` 的 `FALLBACK` 里同步加一行。
+   再在 `public/index.html` 的 `FALLBACK` 末尾同步追加一行。
+   展示自动倒序，新加的永远排最前面。
 2. 加新网站：在 `PROVIDERS` 里加一个 `{ page, parse }` 适配器，
    然后按第 1 步配栏目即可。
