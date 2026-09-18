@@ -237,7 +237,7 @@ const CATS = [
   { k: "tech", label: "科技" },
   { k: "bbs", label: "社区" },
 ];
-const state = { sources: FALLBACK, keyword: "", updated: {}, tab: localStorage.getItem("hot-tab") || "all" };
+const state = { sources: [...FALLBACK].reverse(), keyword: "", updated: {}, tab: localStorage.getItem("hot-tab") || "all" };
 function setTab(k) {
   state.tab = k;
   localStorage.setItem("hot-tab", k);
@@ -291,7 +291,7 @@ function renderShell() {
   $("#tabs").innerHTML = CATS.map((c) =>
     `<button class="tab${state.tab === c.k ? " active" : ""}" data-cat="${c.k}" onclick="setTab('${c.k}')">${c.label}</button>`
   ).join("");
-  $("#grid").innerHTML = [...state.sources].reverse().map((s) => `
+  $("#grid").innerHTML = state.sources.map((s) => `
     <section class="card${state.tab !== "all" && (s.cat || "news") !== state.tab ? " hidden" : ""}" style="--ac:${s.accent}" id="card-${s.key}">
       <div class="card-head">
         <div class="logo">${esc(s.glyph || s.name[0])}</div>
