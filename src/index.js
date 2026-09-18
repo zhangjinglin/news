@@ -24,6 +24,7 @@ const SOURCES = [
   { key: "zol", name: "中关村最新资讯", desc: "数码科技资讯", accent: "#0284c7", glyph: "中", cat: "tech", provider: "allnet", ref: 702, origin: "https://allnet.hot/detail/702" },
   { key: "douban", name: "豆瓣实时热门", desc: "实时热门讨论", accent: "#007722", glyph: "豆", cat: "news", provider: "open2hub", ref: "豆瓣", origin: "https://top.open2hub.com/" },
   { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", cat: "news", provider: "open2hub", ref: "ZAKER", page: "https://top.open2hub.com/channel/news", origin: "https://top.open2hub.com/channel/news" },
+  { key: "cto51", name: "51CTO 推荐", desc: "技术干货推荐", accent: "#c2410c", glyph: "51", cat: "tech", provider: "open2hub", ref: "51CTO", page: "https://top.open2hub.com/channel/tech", origin: "https://top.open2hub.com/channel/tech" },
 ];
 
 const byKey = Object.fromEntries(SOURCES.map((s) => [s.key, s]));
