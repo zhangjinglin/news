@@ -27,6 +27,7 @@ const SOURCES = [
   { key: "cto51", name: "51CTO 推荐", desc: "技术干货推荐", accent: "#c2410c", glyph: "51", cat: "tech", provider: "open2hub", ref: "51CTO", page: "https://top.open2hub.com/channel/tech", origin: "https://top.open2hub.com/channel/tech" },
   { key: "tweet", name: "推文起爆榜", desc: "X 中文热门推文", accent: "#64748b", glyph: "X", cat: "bbs", provider: "sopilot", ref: "rank", origin: "https://sopilot.net/rank" },
   { key: "tweet-hot", name: "推文最热曝光", desc: "6 小时曝光最高", accent: "#0f766e", glyph: "爆", cat: "bbs", provider: "sopilot", ref: "tweets-6h", page: "https://sopilot.net/zh/rank/tweets?range=6h", origin: "https://sopilot.net/zh/rank/tweets?range=6h" },
+  { key: "article", name: "长文起爆榜", desc: "X 热门长文", accent: "#7c3aed", glyph: "文", cat: "bbs", provider: "sopilot", ref: "articles", page: "https://sopilot.net/zh/rank/articles", origin: "https://sopilot.net/zh/rank/articles" },
 ];
 
 const byKey = Object.fromEntries(SOURCES.map((s) => [s.key, s]));
@@ -146,6 +147,25 @@ function parseSopilot(html) {
   return items;
 }
 
+/** sopilot 长文榜:按 <article> 卡片切块,取状态链接 + <h2> 真标题 */
+function parseSopilotArticles(html) {
+  const items = [];
+  const seen = new Set();
+  const blocks = html.match(/<article[\s\S]*?<\/article>/g) || [];
+  for (const b of blocks) {
+    if (items.length >= 50) break;
+    const um = b.match(/href=\\?"(https:\/\/x\.com\/[^"\\]+)\\?"/);
+    const tm = b.match(/<h2[^>]*>([\s\S]*?)<\/h2>/);
+    if (!um || !tm) continue;
+    const url = um[1];
+    const title = stripTags(tm[1]).replace(/\s+/g, " ").trim();
+    if (!title || seen.has(url)) continue;
+    seen.add(url);
+    items.push({ rank: items.length + 1, title, url, image: "", date: "", status: "" });
+  }
+  return items;
+}
+
 /** open2hub:按 <h3 class="platform-title">板块名</h3> 切出对应区块,
  *  再从 list-item-link 锚点里抠 (list-number 排名 + list-text 标题) */
 function parseOpen2hub(html, section) {
@@ -194,9 +214,9 @@ const PROVIDERS = {
   },
   sopilot: {
     // /zh/rank 不稳定,直接抓无语言前缀的 /rank(内容同样是中文热推);
-    // 曝光榜这类子榜单由栏目配 page 覆盖
+    // 曝光榜/长文榜这类子榜单由栏目配 page 覆盖;长文榜用 article 卡片解析
     page: (src) => src.page || `https://sopilot.net/rank`,
-    parse: (html) => parseSopilot(html),
+    parse: (html, src) => (src.ref === "articles" ? parseSopilotArticles(html) : parseSopilot(html)),
   },
 };
 

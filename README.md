@@ -2,7 +2,7 @@
 
 一个跑在 Cloudflare Workers 上的轻量热点聚合页：打开即看，无登录、无刷新按钮，卡片内滚动浏览。
 
-## 当前栏目（13 个，分综合 / 科技 / 社区三类）
+## 当前栏目（14 个，分综合 / 科技 / 社区三类）
 
 | 栏目 | 分类 | 数据来源 |
 | --- | --- | --- |
@@ -13,6 +13,7 @@
 | 51CTO 推荐 | 科技 | top.open2hub.com/channel/tech |
 | V2EX 最新 / Linux DO | 社区 | allnet.hot |
 | 推文起爆榜 / 推文最热曝光（6 小时） | 社区 | sopilot.net |
+| 长文起爆榜 | 社区 | sopilot.net/zh/rank/articles |
 
 ## 结构
 
