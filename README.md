@@ -2,19 +2,15 @@
 
 一个跑在 Cloudflare Workers 上的轻量热点聚合页：打开即看，无登录、无刷新按钮，卡片内滚动浏览。
 
-## 当前栏目（10 个）
+## 当前栏目（10 个，分综合 / 科技 / 社区三类）
 
-| 栏目 | 数据来源 |
-| --- | --- |
-| 知乎热搜 / 知乎热榜 | allnet.hot |
-| V2EX 最新 | allnet.hot |
-| IT 之家 AI | allnet.hot |
-| 虎嗅网最新 | allnet.hot |
-| Linux DO | allnet.hot |
-| 果壳首页推荐 | allnet.hot |
-| 中关村最新资讯 | allnet.hot |
-| 豆瓣实时热门 | top.open2hub.com |
-| ZAKER 新闻 | top.open2hub.com/channel/news |
+| 栏目 | 分类 | 数据来源 |
+| --- | --- | --- |
+| 知乎热搜 / 知乎热榜 | 综合 | allnet.hot |
+| 豆瓣实时热门 | 综合 | top.open2hub.com |
+| ZAKER 新闻 | 综合 | top.open2hub.com/channel/news |
+| IT 之家 AI / 虎嗅网最新 / 果壳首页推荐 / 中关村最新资讯 | 科技 | allnet.hot |
+| V2EX 最新 / Linux DO | 社区 | allnet.hot |
 
 ## 结构
 
@@ -39,7 +35,8 @@ pnpm exec wrangler deploy   # 发布
 
 ## 加新栏目
 
-1. 只加同站栏目：在 `src/index.js` 的 `SOURCES` 里加一行，
+1. 只加同站栏目：在 `src/index.js` 的 `SOURCES` 里加一行
+   （记得填 `cat` 分类：news 综合 / tech 科技 / bbs 社区），
    再在 `public/index.html` 的 `FALLBACK` 里同步加一行。
 2. 加新网站：在 `PROVIDERS` 里加一个 `{ page, parse }` 适配器，
    然后按第 1 步配栏目即可。

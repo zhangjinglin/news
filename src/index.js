@@ -12,17 +12,18 @@ const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";
 
 // 加新栏目只需要在下面加一行,provider 决定去哪个站抓,ref 是站内定位(详情页 id / 板块名)
+// cat 决定顶部分类页签:all(全部,隐含) / news(综合) / tech(科技) / bbs(社区)
 const SOURCES = [
-  { key: "zhihu-hot", name: "知乎热搜", desc: "知乎实时热搜", accent: "#0066ff", glyph: "知", provider: "allnet", ref: 76, origin: "https://allnet.hot/detail/76" },
-  { key: "zhihu-top", name: "知乎热榜", desc: "知乎热榜讨论", accent: "#4c7df0", glyph: "榜", provider: "allnet", ref: 13, origin: "https://allnet.hot/detail/13" },
-  { key: "v2ex", name: "V2EX 最新", desc: "创意工作者社区", accent: "#334155", glyph: "V", provider: "allnet", ref: 1199, origin: "https://allnet.hot/detail/1199" },
-  { key: "ithome-ai", name: "IT 之家 AI", desc: "AI 科技资讯", accent: "#d32f2f", glyph: "AI", provider: "allnet", ref: 143, origin: "https://allnet.hot/detail/143" },
-  { key: "huxiu", name: "虎嗅网最新", desc: "商业科技评论", accent: "#f59e0b", glyph: "虎", provider: "allnet", ref: 473, origin: "https://allnet.hot/detail/473" },
-  { key: "linuxdo", name: "Linux DO", desc: "技术社区新帖", accent: "#10b981", glyph: "L", provider: "allnet", ref: 308, origin: "https://allnet.hot/detail/308" },
-  { key: "guokr", name: "果壳首页推荐", desc: "科技科普推荐", accent: "#65a30d", glyph: "果", provider: "allnet", ref: 124, origin: "https://allnet.hot/detail/124" },
-  { key: "zol", name: "中关村最新资讯", desc: "数码科技资讯", accent: "#0284c7", glyph: "中", provider: "allnet", ref: 702, origin: "https://allnet.hot/detail/702" },
-  { key: "douban", name: "豆瓣实时热门", desc: "实时热门讨论", accent: "#007722", glyph: "豆", provider: "open2hub", ref: "豆瓣", origin: "https://top.open2hub.com/" },
-  { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", provider: "open2hub", ref: "ZAKER", page: "https://top.open2hub.com/channel/news", origin: "https://top.open2hub.com/channel/news" },
+  { key: "zhihu-hot", name: "知乎热搜", desc: "知乎实时热搜", accent: "#0066ff", glyph: "知", cat: "news", provider: "allnet", ref: 76, origin: "https://allnet.hot/detail/76" },
+  { key: "zhihu-top", name: "知乎热榜", desc: "知乎热榜讨论", accent: "#4c7df0", glyph: "榜", cat: "news", provider: "allnet", ref: 13, origin: "https://allnet.hot/detail/13" },
+  { key: "v2ex", name: "V2EX 最新", desc: "创意工作者社区", accent: "#334155", glyph: "V", cat: "bbs", provider: "allnet", ref: 1199, origin: "https://allnet.hot/detail/1199" },
+  { key: "ithome-ai", name: "IT 之家 AI", desc: "AI 科技资讯", accent: "#d32f2f", glyph: "AI", cat: "tech", provider: "allnet", ref: 143, origin: "https://allnet.hot/detail/143" },
+  { key: "huxiu", name: "虎嗅网最新", desc: "商业科技评论", accent: "#f59e0b", glyph: "虎", cat: "tech", provider: "allnet", ref: 473, origin: "https://allnet.hot/detail/473" },
+  { key: "linuxdo", name: "Linux DO", desc: "技术社区新帖", accent: "#10b981", glyph: "L", cat: "bbs", provider: "allnet", ref: 308, origin: "https://allnet.hot/detail/308" },
+  { key: "guokr", name: "果壳首页推荐", desc: "科技科普推荐", accent: "#65a30d", glyph: "果", cat: "tech", provider: "allnet", ref: 124, origin: "https://allnet.hot/detail/124" },
+  { key: "zol", name: "中关村最新资讯", desc: "数码科技资讯", accent: "#0284c7", glyph: "中", cat: "tech", provider: "allnet", ref: 702, origin: "https://allnet.hot/detail/702" },
+  { key: "douban", name: "豆瓣实时热门", desc: "实时热门讨论", accent: "#007722", glyph: "豆", cat: "news", provider: "open2hub", ref: "豆瓣", origin: "https://top.open2hub.com/" },
+  { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", cat: "news", provider: "open2hub", ref: "ZAKER", page: "https://top.open2hub.com/channel/news", origin: "https://top.open2hub.com/channel/news" },
 ];
 
 const byKey = Object.fromEntries(SOURCES.map((s) => [s.key, s]));
@@ -264,12 +265,13 @@ export default {
     if (url.pathname === "/api/sources") {
       return json({
         ok: true,
-        sources: SOURCES.map(({ key, name, desc, accent, glyph, provider, ref, origin }) => ({
+        sources: SOURCES.map(({ key, name, desc, accent, glyph, cat, provider, ref, origin }) => ({
           key,
           name,
           desc,
           accent,
           glyph,
+          cat,
           provider,
           ref,
           origin,

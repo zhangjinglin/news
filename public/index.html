@@ -84,6 +84,19 @@
   }
   .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-hover); background: var(--hover); }
 
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 2px 0 14px; }
+  .tab {
+    border: 1px solid var(--line); background: var(--card); color: var(--muted);
+    border-radius: 999px; padding: 8px 20px; font-size: 14px; font-weight: 600;
+    cursor: pointer; box-shadow: var(--shadow); transition: all .18s;
+  }
+  .tab:hover { color: var(--ink); transform: translateY(-1px); }
+  .tab.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff; border: 0;
+  }
+  .card.hidden { display: none; }
+
   .meta { color: var(--faint); font-size: 12.5px; margin: 0 0 18px; }
 
   .grid {
@@ -193,6 +206,7 @@
       <button class="btn" id="themeBtn" title="切换深浅色">🌓 主题</button>
     </div>
   </header>
+  <nav class="tabs" id="tabs"></nav>
   <p class="meta" id="meta">正在加载…</p>
   <main class="grid" id="grid"></main>
   <footer>数据来源 <a href="https://allnet.hot/" target="_blank" rel="noopener">allnet.hot</a> 各详情页 · 点击标题跳转原文 · 缓存约 5 分钟</footer>
@@ -200,18 +214,35 @@
 
 <script>
 const FALLBACK = [
-  { key: "zhihu-hot", name: "知乎热搜", id: 76, desc: "知乎实时热搜", accent: "#0066ff", glyph: "知" },
-  { key: "zhihu-top", name: "知乎热榜", id: 13, desc: "知乎热榜讨论", accent: "#4c7df0", glyph: "榜" },
-  { key: "v2ex", name: "V2EX 最新", id: 1199, desc: "创意工作者社区", accent: "#334155", glyph: "V" },
-  { key: "ithome-ai", name: "IT 之家 AI", id: 143, desc: "AI 科技资讯", accent: "#d32f2f", glyph: "AI" },
-  { key: "huxiu", name: "虎嗅网最新", id: 473, desc: "商业科技评论", accent: "#f59e0b", glyph: "虎" },
-  { key: "linuxdo", name: "Linux DO", id: 308, desc: "技术社区新帖", accent: "#10b981", glyph: "L" },
-  { key: "guokr", name: "果壳首页推荐", id: 124, desc: "科技科普推荐", accent: "#65a30d", glyph: "果" },
-  { key: "zol", name: "中关村最新资讯", id: 702, desc: "数码科技资讯", accent: "#0284c7", glyph: "中", origin: "https://allnet.hot/detail/702" },
-  { key: "douban", name: "豆瓣实时热门", desc: "实时热门讨论", accent: "#007722", glyph: "豆", origin: "https://top.open2hub.com/" },
-  { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", origin: "https://top.open2hub.com/channel/news" },
+  { key: "zhihu-hot", name: "知乎热搜", id: 76, desc: "知乎实时热搜", accent: "#0066ff", glyph: "知", cat: "news" },
+  { key: "zhihu-top", name: "知乎热榜", id: 13, desc: "知乎热榜讨论", accent: "#4c7df0", glyph: "榜", cat: "news" },
+  { key: "v2ex", name: "V2EX 最新", id: 1199, desc: "创意工作者社区", accent: "#334155", glyph: "V", cat: "bbs" },
+  { key: "ithome-ai", name: "IT 之家 AI", id: 143, desc: "AI 科技资讯", accent: "#d32f2f", glyph: "AI", cat: "tech" },
+  { key: "huxiu", name: "虎嗅网最新", id: 473, desc: "商业科技评论", accent: "#f59e0b", glyph: "虎", cat: "tech" },
+  { key: "linuxdo", name: "Linux DO", id: 308, desc: "技术社区新帖", accent: "#10b981", glyph: "L", cat: "bbs" },
+  { key: "guokr", name: "果壳首页推荐", id: 124, desc: "科技科普推荐", accent: "#65a30d", glyph: "果", cat: "tech" },
+  { key: "zol", name: "中关村最新资讯", id: 702, desc: "数码科技资讯", accent: "#0284c7", glyph: "中", cat: "tech", origin: "https://allnet.hot/detail/702" },
+  { key: "douban", name: "豆瓣实时热门", desc: "实时热门讨论", accent: "#007722", glyph: "豆", cat: "news", origin: "https://top.open2hub.com/" },
+  { key: "zaker", name: "ZAKER 新闻", desc: "新闻频道热点", accent: "#e11d48", glyph: "Z", cat: "news", origin: "https://top.open2hub.com/channel/news" },
 ];
-const state = { sources: FALLBACK, keyword: "", updated: {} };
+const CATS = [
+  { k: "all", label: "全部" },
+  { k: "news", label: "综合" },
+  { k: "tech", label: "科技" },
+  { k: "bbs", label: "社区" },
+];
+const state = { sources: FALLBACK, keyword: "", updated: {}, tab: localStorage.getItem("hot-tab") || "all" };
+function setTab(k) {
+  state.tab = k;
+  localStorage.setItem("hot-tab", k);
+  document.querySelectorAll("#tabs .tab").forEach((b) => b.classList.toggle("active", b.dataset.cat === k));
+  state.sources.forEach((s) => {
+    const card = $("#card-" + s.key);
+    if (card) card.classList.toggle("hidden", k !== "all" && (s.cat || "news") !== k);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+window.setTab = setTab;
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => (s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -251,8 +282,11 @@ $("#themeBtn").onclick = () => {
 };
 
 function renderShell() {
+  $("#tabs").innerHTML = CATS.map((c) =>
+    `<button class="tab${state.tab === c.k ? " active" : ""}" data-cat="${c.k}" onclick="setTab('${c.k}')">${c.label}</button>`
+  ).join("");
   $("#grid").innerHTML = state.sources.map((s) => `
-    <section class="card" style="--ac:${s.accent}" id="card-${s.key}">
+    <section class="card${state.tab !== "all" && (s.cat || "news") !== state.tab ? " hidden" : ""}" style="--ac:${s.accent}" id="card-${s.key}">
       <div class="card-head">
         <div class="logo">${esc(s.glyph || s.name[0])}</div>
         <h2>${esc(s.name)}<small>${esc(s.desc || "")}</small></h2>
