@@ -125,7 +125,7 @@ function parseAllnet(html) {
 }
 
 /** sopilot 推文榜:从 x.com/status 锚点抠条目。
- *  纯图片/视频推文的锚文本只有时间,则往后找作者名拼标题 */
+ *  图片/视频卡片的锚文本只有时间,真标题在后面同链接的 h3 里,先找 h3 再找作者兜底 */
 function parseSopilot(html) {
   const items = [];
   const seen = new Set();
@@ -135,14 +135,21 @@ function parseSopilot(html) {
     const url = m[1];
     if (seen.has(url)) continue;
     let title = stripTags(m[2]).replace(/\s*https?:\/\/t\.co\/\w+\s*/g, " ").trim();
-    // 纯数字的是点赞/回复数链接,不是推文标题
-    if (title.length < 2 || /^\d+$/.test(title)) continue;
-    if (/^\d{1,2}\/\d{1,2},\s*\d{1,2}:\d{2}\s*[AP]M$/.test(title)) {
-      const ahead = html.slice(m.index, m.index + 2000);
-      const am = ahead.match(/rank\/creators\/[^"]*"[^>]*title="([^"]+)"/) ||
-        ahead.match(/class="truncate"[^>]*>([^<]+)</);
-      const author = am ? stripTags(am[1]) : "";
-      title = author ? `${author} 的热门推文` : "热门推文(图片/视频)";
+    // 纯数字 / 2.3K 这类是点赞回复数链接,不是推文标题
+    if (title.length < 2 || /^\d[\d.,]*\s*[KMB万]?$/.test(title)) continue;
+    if (/^\d{1,2}\/\d{1,2}[,\s]+\d{1,2}:\d{2}(\s*[AP]M)?$/.test(title)) {
+      const ahead = html.slice(m.index, m.index + 3000);
+      const escUrl = url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const h3m = ahead.match(new RegExp(`<a[^>]*href="${escUrl}"[^>]*><h3[^>]*>([\\s\\S]*?)<\\/h3>`));
+      if (h3m) {
+        title = stripTags(h3m[1]).replace(/\s+/g, " ").trim();
+      } else {
+        const am = ahead.match(/rank\/creators\/[^"]*"[^>]*title="([^"]+)"/) ||
+          ahead.match(/class="truncate"[^>]*>([^<]+)</);
+        const author = am ? stripTags(am[1]) : "";
+        title = author ? `${author} 的热门推文` : "热门推文(图片/视频)";
+      }
+      if (!title) continue;
     }
     seen.add(url);
     items.push({ rank: items.length + 1, title, url, image: "", date: "", status: "" });
